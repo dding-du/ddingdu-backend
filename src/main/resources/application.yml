@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: chatbot-backend
+  profiles:
+    default: local
