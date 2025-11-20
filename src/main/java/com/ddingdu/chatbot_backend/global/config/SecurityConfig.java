@@ -45,7 +45,8 @@ public class SecurityConfig {
                     "/",
                     "/index.html",
                     "/api/auth/**",           // 회원가입, 로그인
-                    "/api/email/**"          // 이메일 인증
+                    "/api/email/**",          // 이메일 인증
+                    "/api/chat/**"         // 채팅 API
                 ).permitAll()
 
                 // 그 외 모든 요청은 인증 필요
