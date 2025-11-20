@@ -24,6 +24,7 @@ services:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - CHROMA_URL=http://chromadb:8000/api/v1
       - CHROMA_COLLECTION_ID=txt_collection
+      - GEMINI_API_MODEL=gemini-1.5-flash
     depends_on:
       - chromadb
     restart: unless-stopped
@@ -36,7 +37,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - chroma-data:/chroma/chroma
+      - ./chroma_db:/chroma/chroma
     restart: unless-stopped
     networks:
       - ddingdu-network
