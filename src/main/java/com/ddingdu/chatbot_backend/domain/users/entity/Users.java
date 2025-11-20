@@ -1,7 +1,9 @@
 package com.ddingdu.chatbot_backend.domain.users.entity;
 
+import com.ddingdu.chatbot_backend.domain.lecture.entity.Take;
 import com.ddingdu.chatbot_backend.domain.users.enums.Major;
 import com.ddingdu.chatbot_backend.global.common.BaseEntity;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -9,7 +11,10 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.util.ArrayList;
+import java.util.List;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -43,6 +48,9 @@ public class Users extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Major major;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Take> takes = new ArrayList<>();
 
     @Builder
     public Users(String mjuId, String name, String email, String password, Major major) {
