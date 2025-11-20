@@ -5,6 +5,7 @@ import java.util.Arrays;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -40,6 +41,9 @@ public class SecurityConfig {
 
             // 요청에 대한 인증/인가 설정
             .authorizeHttpRequests(auth -> auth
+                // CORS Preflight 요청(OPTIONS)은 무조건 허용
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                 // 인증 없이 접근 가능한 경로
                 .requestMatchers(
                     "/",
@@ -86,7 +90,8 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",      // React 개발 서버
-            "https://ddingduroid.vercel.app/"     // 실제 프론트엔드 도메인
+            "https://ddingduroid.vercel.app/",     // 실제 프론트엔드 도메인
+            "https://ddingdu.p-e.kr"
         ));
 
         configuration.setAllowedMethods(Arrays.asList(
