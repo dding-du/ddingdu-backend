@@ -6,29 +6,38 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=prod
+      # === [DB & 기본 설정 (유지)] ===
       - SPRING_DATASOURCE_URL=${DB_URL}
       - SPRING_DATASOURCE_USERNAME=${DB_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${DB_PASSWORD}
       - SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
       - SPRING_JPA_SHOW_SQL=false
+
+      # === [메일 설정 (유지)] ===
       - SPRING_MAIL_HOST=smtp.gmail.com
       - SPRING_MAIL_PORT=587
       - SPRING_MAIL_USERNAME=${GMAIL_USERNAME}
       - SPRING_MAIL_PASSWORD=${GMAIL_PASSWORD}
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+
+      # === [JWT 설정 (유지)] ===
       - JWT_SECRET=${JWT_SECRET}
       - JWT_ACCESS_TOKEN_EXPIRATION=3600000
       - JWT_REFRESH_TOKEN_EXPIRATION=604800000
 
-      # [Key Fix] SDK가 인식하는 GOOGLE_API_KEY로 매핑 완료!
-      - GOOGLE_API_KEY=${GEMINI_API_KEY}
+      # === [AI 관련 설정 (대거 삭제 및 변경)] ===
+      # 삭제 대상 (더 이상 스프링이 안 씀):
+      # - GOOGLE_API_KEY
+      # - CHROMA_URL
+      # - CHROMA_COLLECTION_ID
+      # - GEMINI_API_MODEL
+      # - GEMINI_SYSTEM_INSTRUCTION
 
-      - CHROMA_URL=http://chromadb:8000/api/v1
-      - CHROMA_COLLECTION_ID=txt_collection
-      - GEMINI_API_MODEL=gemini-2.5-flash
-      - GEMINI_SYSTEM_INSTRUCTION=당신은 수강신청 도우미 챗봇입니다. 주어진 정보를 바탕으로 친절하게 답변하세요.
+      # [필수 추가] AI 서버(FastAPI) 주소
+      # (이 주소로 HTTP 요청을 보내서 답변을 받아옵니다)
+      - AI_SERVER_URL=http://ai-server:8000/chat
     depends_on:
       - ai-server
     networks:
