@@ -21,7 +21,10 @@ services:
       - JWT_SECRET=${JWT_SECRET}
       - JWT_ACCESS_TOKEN_EXPIRATION=3600000
       - JWT_REFRESH_TOKEN_EXPIRATION=604800000
+
+      # [Key Fix] SDK가 인식하는 GOOGLE_API_KEY로 매핑 완료!
       - GOOGLE_API_KEY=${GEMINI_API_KEY}
+
       - CHROMA_URL=http://chromadb:8000/api/v1
       - CHROMA_COLLECTION_ID=txt_collection
       - GEMINI_API_MODEL=gemini-1.5-flash
@@ -37,13 +40,11 @@ services:
     ports:
       - "8000:8000"
     volumes:
+      # [Key Fix] 호스트의 데이터 폴더를 바로 연결!
       - ./chroma_db:/chroma/chroma
     restart: unless-stopped
     networks:
       - ddingdu-network
-
-volumes:
-  chroma-data:
 
 networks:
   ddingdu-network:
