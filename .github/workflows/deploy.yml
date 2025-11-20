@@ -71,6 +71,9 @@ jobs:
               -e SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}" \
               -e SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}" \
               -e SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              -e SPRING_MAIL_USERNAME="${{ secrets.GMAIL_USERNAME }}" \
+              -e SPRING_MAIL_PASSWORD="${{ secrets.GMAIL_PASSWORD }}" \
+              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
               --name ddingdu-backend \
               --restart unless-stopped \
               $ECR_URL:latest
