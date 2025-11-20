@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UserInfoResponseDto {
 
+    private Long userId;  // pk
     private String mjuId;           // 학번
     private String name;            // 이름
     private String email;           // 이메일
@@ -21,6 +22,7 @@ public class UserInfoResponseDto {
 
     public static UserInfoResponseDto from(Users user) {
         return UserInfoResponseDto.builder()
+            .userId(user.getUserId())
             .mjuId(user.getMjuId())
             .name(user.getName())
             .email(user.getEmail())
