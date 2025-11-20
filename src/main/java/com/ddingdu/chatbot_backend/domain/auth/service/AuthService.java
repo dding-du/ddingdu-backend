@@ -10,6 +10,8 @@ import com.ddingdu.chatbot_backend.domain.auth.repository.AccessTokenBlacklistRe
 import com.ddingdu.chatbot_backend.domain.auth.repository.RefreshTokenRepository;
 import com.ddingdu.chatbot_backend.domain.users.entity.Users;
 import com.ddingdu.chatbot_backend.domain.users.repository.UsersRepository;
+import com.ddingdu.chatbot_backend.global.exception.CustomException;
+import com.ddingdu.chatbot_backend.global.exception.ErrorCode;
 import jakarta.transaction.Transactional;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +37,8 @@ public class AuthService {
     private void saveRefreshToken(Long userId, String token) {
         refreshTokenRepository.findByUserId(userId)
             .ifPresentOrElse(
-                refreshToken -> refreshToken.updateToken(token), // 기존에 있으면 업데이트
-                () -> { // 없으면 새로 저장
+                refreshToken -> refreshToken.updateToken(token),
+                () -> {
                     RefreshToken newRefreshToken = RefreshToken.builder()
                         .userId(userId)
                         .refreshToken(token)
@@ -55,16 +57,16 @@ public class AuthService {
 
         // 1. 이메일 인증 확인
         if (!emailService.isVerified(request.getEmail())) {
-            throw new IllegalStateException("이메일 인증이 완료되지 않았습니다.");
+            throw new CustomException(ErrorCode.EMAIL_NOT_VERIFIED);
         }
 
         // 2. 중복 검사
         if (usersRepository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("이미 가입된 이메일입니다.");
+            throw new CustomException(ErrorCode.DUPLICATE_EMAIL);
         }
 
         if (usersRepository.existsByMjuId(request.getMjuId())) {
-            throw new IllegalArgumentException("이미 가입된 학번입니다.");
+            throw new CustomException(ErrorCode.DUPLICATE_MJU_ID);
         }
 
         // 3. 비밀번호 암호화
@@ -114,11 +116,11 @@ public class AuthService {
 
         // 1. 사용자 조회
         Users user = usersRepository.findByEmail(request.getEmail())
-            .orElseThrow(() -> new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다."));
+            .orElseThrow(() -> new CustomException(ErrorCode.INVALID_EMAIL_OR_PASSWORD));
 
         // 2. 비밀번호 검증
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new IllegalArgumentException("이메일 또는 비밀번호가 일치하지 않습니다.");
+            throw new CustomException(ErrorCode.INVALID_EMAIL_OR_PASSWORD);
         }
 
         // 3. JWT 토큰 생성
@@ -151,22 +153,22 @@ public class AuthService {
 
         // 1. Refresh Token 유효성 검증 (JWT 형식 검증)
         if (!jwtTokenProvider.validateToken(refreshToken)) {
-            throw new IllegalArgumentException("유효하지 않거나 만료된 Refresh Token입니다.");
+            throw new CustomException(ErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         // 2. Refresh Token인지 확인 (Type claim 확인)
         if (!jwtTokenProvider.isRefreshToken(refreshToken)) {
-            throw new IllegalArgumentException("Refresh Token이 아닙니다.");
+            throw new CustomException(ErrorCode.NOT_REFRESH_TOKEN);
         }
 
         // 3. DB에 저장된 토큰과 일치하는지 확인
         RefreshToken storedRefreshToken = refreshTokenRepository.findByRefreshToken(refreshToken)
-            .orElseThrow(() -> new IllegalArgumentException("DB에 존재하지 않는 Refresh Token입니다. (이미 만료 또는 사용됨)"));
+            .orElseThrow(() -> new CustomException(ErrorCode.REFRESH_TOKEN_NOT_FOUND));
 
         // 4. 사용자 조회 (토큰에서 userId 추출)
         Long userId = jwtTokenProvider.getUserId(refreshToken);
         Users user = usersRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
 
         // 5. 새로운 토큰 생성
         String newAccessToken = jwtTokenProvider.createAccessToken(
@@ -196,17 +198,14 @@ public class AuthService {
     @Transactional
     public void logout(String accessToken) {
         // 1. Refresh Token 삭제 (DB에서 영구적으로 토큰을 무효화)
-        // JWT 토큰에서 userId를 추출하여 Refresh Token을 삭제
         Long userId = jwtTokenProvider.getUserId(accessToken);
         refreshTokenRepository.deleteByUserId(userId);
         log.info("Refresh Token 삭제 완료: userId={}", userId);
 
         // 2. Access Token 블랙리스트 처리 (DB에 저장)
         try {
-            // Access Token의 만료 시간을 가져옴
             LocalDateTime expirationTime = jwtTokenProvider.getExpirationDateTime(accessToken);
 
-            // Access Token을 블랙리스트 테이블에 저장
             AccessTokenBlacklist blacklistEntry = AccessTokenBlacklist.builder()
                 .accessToken(accessToken)
                 .expirationTime(expirationTime)
@@ -218,6 +217,7 @@ public class AuthService {
 
         } catch (Exception e) {
             log.error("로그아웃 중 Access Token 블랙리스트 처리 실패: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
 }
