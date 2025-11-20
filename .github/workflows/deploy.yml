@@ -68,11 +68,13 @@ jobs:
           GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
           FASTAPI_SERVER_URL: ${{ secrets.FASTAPI_SERVER_URL }}
+          API_FASTAPI_CONNECT_TIMEOUT: ${{ secrets.API_FASTAPI_CONNECT_TIMEOUT }}
+          API_FASTAPI_READ_TIMEOUT: ${{ secrets.API_FASTAPI_READ_TIMEOUT }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
-          envs: DB_URL,DB_USERNAME,DB_PASSWORD,GMAIL_USERNAME,GMAIL_PASSWORD,JWT_SECRET, FASTAPI_SERVER_URL
+          envs: DB_URL,DB_USERNAME,DB_PASSWORD,GMAIL_USERNAME,GMAIL_PASSWORD,JWT_SECRET,FASTAPI_SERVER_URL,API_FASTAPI_CONNECT_TIMEOUT,API_FASTAPI_READ_TIMEOUT
           script: |
             cd ~/ddingdu-backend
             
@@ -87,6 +89,8 @@ jobs:
             export GMAIL_PASSWORD="${GMAIL_PASSWORD}"
             export JWT_SECRET="${JWT_SECRET}"
             export FASTAPI_SERVER_URL="${FASTAPI_SERVER_URL}"
+            export API_FASTAPI_CONNECT_TIMEOUT="${API_FASTAPI_CONNECT_TIMEOUT}"
+            export API_FASTAPI_READ_TIMEOUT="${API_FASTAPI_READ_TIMEOUT}"
             
             # 최신 이미지 Pull
             docker compose pull ddingdu-backend
