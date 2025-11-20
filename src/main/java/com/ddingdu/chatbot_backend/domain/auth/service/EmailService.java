@@ -6,6 +6,7 @@ import com.ddingdu.chatbot_backend.global.exception.CustomException;
 import com.ddingdu.chatbot_backend.global.exception.ErrorCode;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
@@ -47,18 +48,23 @@ public class EmailService {
         // 1. 이메일 도메인 검증
         validateMjuEmail(email);
 
-        // 2. 기존 인증 코드가 있다면 재전송 쿨다운 체크
-        emailVerificationRepository.findByEmail(email).ifPresent(existing -> {
+        // 2. 기존 인증 코드 조회
+        Optional<EmailVerification> existingOpt = emailVerificationRepository.findByEmail(email);
+
+        if (existingOpt.isPresent()) {
+            EmailVerification existing = existingOpt.get();
             LocalDateTime lastSentTime = existing.getCreatedAt();
             LocalDateTime cooldownEndTime = lastSentTime.plusSeconds(RESEND_COOLDOWN_SECONDS);
 
+            // 쿨다운 체크
             if (LocalDateTime.now().isBefore(cooldownEndTime)) {
                 throw new CustomException(ErrorCode.VERIFICATION_TOO_SOON);
             }
 
-            // 쿨다운이 지났으면 기존 코드 삭제
+            // 삭제 후 flush로 즉시 DB 반영
             emailVerificationRepository.deleteByEmail(email);
-        });
+            emailVerificationRepository.flush();
+        }
 
         // 3. 6자리 인증 코드 생성
         String code = generateVerificationCode();
@@ -99,6 +105,7 @@ public class EmailService {
         // 2. 기존 인증 코드 삭제
         if (emailVerificationRepository.existsByEmail(email)) {
             emailVerificationRepository.deleteByEmail(email);
+            emailVerificationRepository.flush();
         }
 
         // 3. 6자리 인증 코드 생성
