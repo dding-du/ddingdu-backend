@@ -25,8 +25,8 @@ public class TakeController {
     private final TakeService takeService;
 
     @Operation(summary = "내 강의 조회", description = "내 수강정보를 조회합니다.")
-    @GetMapping("/my-lecture")
-    ResponseEntity<List<TakeResponseDto>> myLecture(@PathVariable Long userId) {
+    @GetMapping("/my-lecture/{userId}")
+    ResponseEntity<List<TakeResponseDto>> myLecture(@PathVariable("userId") Long userId) {
         return ResponseEntity.ok(takeService.myLecture(userId));
     }
 
