@@ -28,10 +28,10 @@ public class Users extends BaseEntity {
     @Column(name = "user_id")
     private Long userId;
 
-    @Column(name = "mju_id", nullable = false, unique = true, length = 20)
+    @Column(name = "mju_id", nullable = false, unique = true, length = 8)
     private String mjuId;
 
-    @Column(nullable = false, length = 10)
+    @Column(nullable = false, length = 20)
     private String name;
 
     @Column(nullable = false, unique = true, length = 100)
