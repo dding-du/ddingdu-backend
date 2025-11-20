@@ -26,28 +26,54 @@ repositories {
 
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-mustache'
+
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	// implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+	// ==================================================
+	// [AI & Chat] Gemini & WebFlux (from feat/6)
+	// ==================================================
+	// Gemini 스트리밍 답변을 위해 WebFlux 필요
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	// Google GenAI SDK
+	implementation 'com.google.genai:google-genai:1.0.0' 
+	// (선택) 간단한 화면 테스트용, 필요 없으면 삭제 가능
+	implementation 'org.springframework.boot:spring-boot-starter-mustache' 
 
-	compileOnly 'org.projectlombok:lombok'
-	// developmentOnly 'org.springframework.boot:spring-boot-devtools'
+	// ==================================================
+	// [Auth] JWT (from dev)
+	// ==================================================
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.3'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.3'
+
+	// ==================================================
+	// [Database] MySQL (Common)
+	// ==================================================
 	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// ==================================================
+	// [Utils] Lombok (Common)
+	// ==================================================
+	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+
+	// ==================================================
+	// [Test] Testing Libraries (Merged)
+	// ==================================================
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'io.projectreactor:reactor-test'
+	testImplementation 'org.springframework.security:spring-security-test' // from dev
+	testImplementation 'io.projectreactor:reactor-test' // from feat/6 (WebFlux 테스트용)
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-
-	// Google Java SDK
-	implementation 'com.google.genai:google-genai:1.0.0'
 }
 
 tasks.withType(JavaCompile).configureEach {
 	options.compilerArgs.add('-parameters')
 }
-
 
 tasks.named('test') {
 	useJUnitPlatform()
