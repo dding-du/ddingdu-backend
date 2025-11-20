@@ -34,6 +34,6 @@ public class Lecture {
     @Column(nullable = false, unique = true)
     private String lectureCode;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Take> takes = new ArrayList<>();
 }
