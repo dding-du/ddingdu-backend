@@ -46,7 +46,14 @@ public class SecurityConfig {
                     "/index.html",
                     "/api/auth/**",           // 회원가입, 로그인
                     "/api/email/**",          // 이메일 인증
-                    "/api/chat/**"         // 채팅 API
+                    "/api/chat/**",           // 채팅 API
+                    "/api/test/**",           // 테스트 API
+                    // Swagger 관련 경로
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources/**",
+                    "/webjars/**"
                 ).permitAll()
 
                 // 그 외 모든 요청은 인증 필요

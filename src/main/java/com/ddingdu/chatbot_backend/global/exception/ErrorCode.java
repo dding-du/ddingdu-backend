@@ -14,6 +14,8 @@ public enum ErrorCode {
     DUPLICATE_EMAIL(HttpStatus.BAD_REQUEST, "이미 가입된 이메일입니다."),
     DUPLICATE_MJU_ID(HttpStatus.BAD_REQUEST, "이미 가입된 학번입니다."),
     INVALID_MJU_EMAIL(HttpStatus.BAD_REQUEST, "명지대학교 이메일(@mju.ac.kr)만 사용 가능합니다."),
+    VERIFICATION_CODE_EXPIRED(HttpStatus.BAD_REQUEST, "인증 코드가 만료되었습니다. 다시 요청해주세요."),
+    VERIFICATION_TOO_SOON(HttpStatus.BAD_REQUEST, "인증 코드 재전송은 1분 후에 가능합니다."),
 
     // 401 Unauthorized
     UNAUTHORIZED(HttpStatus.UNAUTHORIZED, "인증이 필요한 요청입니다."),

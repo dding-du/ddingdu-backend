@@ -52,4 +52,11 @@ public class Users extends BaseEntity {
         this.password = password;
         this.major = major;
     }
+
+    /**
+     * 비밀번호 변경
+     */
+    public void updatePassword(String newPassword) {
+        this.password = newPassword;
+    }
 }
