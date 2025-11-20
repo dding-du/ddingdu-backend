@@ -29,7 +29,7 @@ public class Users extends BaseEntity {
     private Long userId;
 
     @Column(name = "mju_id", nullable = false, unique = true, length = 20)
-    private Long mjuId;
+    private String mjuId;
 
     @Column(nullable = false, length = 10)
     private String name;
@@ -45,7 +45,7 @@ public class Users extends BaseEntity {
     private Major major;
 
     @Builder
-    public Users(Long mjuId, String name, String email, String password, Major major) {
+    public Users(String mjuId, String name, String email, String password, Major major) {
         this.mjuId = mjuId;
         this.name = name;
         this.email = email;
