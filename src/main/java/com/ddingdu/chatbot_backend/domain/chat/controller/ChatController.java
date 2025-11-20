@@ -23,17 +23,28 @@ package com.ddingdu.chatbot_backend.domain.chat.controller;
 //import reactor.core.publisher.Flux;
 //
 
+import com.ddingdu.chatbot_backend.domain.chat.dto.ChatRequestDto;
+import com.ddingdu.chatbot_backend.domain.chat.service.ChatService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;@RestController
+import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
+
+@RestController
 @RequestMapping("/api/chat")
 @RequiredArgsConstructor
 @Tag(name = "채팅 API", description = "AI 챗봇과의 대화 관련 API")
 public class ChatController {
+
+    private final ChatService ChatService;
 
     @Operation(summary = "헬스 체크", description = "ChatController의 상태를 확인합니다.")
     @ApiResponse(responseCode = "200", description = "정상 작동 중")
@@ -41,6 +52,17 @@ public class ChatController {
     public String healthCheck() {
         return "ChatController is up and running!";
     }
+
+    @PostMapping(value = "/stream/{conversationId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> chatStream(
+        @PathVariable String conversationId,
+        @RequestBody ChatRequestDto requestDto) {
+
+        // Note: 실제 FastAPI가 스트리밍을 지원하지 않더라도, Flux로 감싸 반환하여 WebFlux 환경을 유지합니다.
+        return ChatService.getAiResponse(requestDto.getMessage());
+    }
+
+
 }
 //
 //    private final GeminiChatService geminiChatService;
