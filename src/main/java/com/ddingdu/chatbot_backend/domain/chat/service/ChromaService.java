@@ -83,7 +83,6 @@ public class ChromaService {
             log.error("RAG 검색 중 오류 발생 (URL: {}): {}", requestUrl, e.getMessage());
             // 필요하다면 e.printStackTrace()로 상세 로그 확인
         }
-
         log.info("RAG 검색 결과 없음 (또는 오류 발생)");
         return ""; // 에러 발생 시 빈 문자열 반환 -> 일반 채팅으로 전환됨
     }
