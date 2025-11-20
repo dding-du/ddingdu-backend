@@ -19,7 +19,7 @@ public class ChatService {
     private String aiServerBaseUrl;
 
     public Flux<String> getAiResponse(String userMessage) {
-        final String apiPath = "/chat";
+        final String apiPath = "/search";
 
         return Flux.create(sink -> {
             try {
@@ -39,11 +39,11 @@ public class ChatService {
                     .body(Map.class);
 
                 // 3. 응답 파싱 및 유효성 검사
-                if (response == null || !response.containsKey("answer")) {
-                    throw new RuntimeException("AI 서버로부터 유효한 'answer' 필드를 받지 못했습니다. 응답: " + response);
+                if (response == null || !response.containsKey("result")) {
+                    throw new RuntimeException("AI 서버로부터 유효한 'result' 필드를 받지 못했습니다. 응답: " + response);
                 }
 
-                String aiAnswer = (String) response.get("answer");
+                String aiAnswer = (String) response.get("result");
                 log.info("AI 응답 수신 완료.");
 
                 // 4. Flux로 감싸서 응답 반환
