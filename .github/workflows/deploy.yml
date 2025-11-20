@@ -7,7 +7,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
 
@@ -34,7 +34,7 @@ jobs:
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
-        
+
       # (5) Docker 이미지 빌드 및 푸시
       - name: Build and push Docker image
         env:
@@ -66,16 +66,26 @@ jobs:
             docker stop ddingdu-backend || true
             docker rm ddingdu-backend || true
             
-            # 새로운 컨테이너 실행 (환경 변수는 필요한 경우 Secrets에서 추가)
+            # 새로운 컨테이너 실행 (모든 환경 변수 포함)
             docker run -d -p 8080:8080 \
+              -e SPRING_PROFILES_ACTIVE=prod \
               -e SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}" \
               -e SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}" \
               -e SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}" \
+              -e SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver \
+              -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \
+              -e SPRING_JPA_SHOW_SQL=false \
+              -e SPRING_MAIL_HOST=smtp.gmail.com \
+              -e SPRING_MAIL_PORT=587 \
               -e SPRING_MAIL_USERNAME="${{ secrets.GMAIL_USERNAME }}" \
               -e SPRING_MAIL_PASSWORD="${{ secrets.GMAIL_PASSWORD }}" \
+              -e SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true \
+              -e SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true \
               -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
+              -e JWT_ACCESS_TOKEN_EXPIRATION=3600000 \
+              -e JWT_REFRESH_TOKEN_EXPIRATION=604800000 \
               --name ddingdu-backend \
               --restart unless-stopped \
               $ECR_URL:latest
-              
+            
             docker image prune -f
