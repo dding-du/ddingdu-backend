@@ -40,7 +40,7 @@ dependencies {
     // Gemini 스트리밍 답변을 위해 WebFlux 필요
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     // Google GenAI SDK
-    implementation 'com.google.genai:google-genai:1.0.0'
+    //implementation 'com.google.genai:google-genai:1.0.0'
     // (선택) 간단한 화면 테스트용, 필요 없으면 삭제 가능
     implementation 'org.springframework.boot:spring-boot-starter-mustache'
 

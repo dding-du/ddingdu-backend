@@ -25,25 +25,22 @@ services:
       # [Key Fix] SDK가 인식하는 GOOGLE_API_KEY로 매핑 완료!
       - GOOGLE_API_KEY=${GEMINI_API_KEY}
 
-      - CHROMA_URL=http://chromadb:8000/api/v2
+      - CHROMA_URL=http://chromadb:8000/api/v1
       - CHROMA_COLLECTION_ID=txt_collection
       - GEMINI_API_MODEL=gemini-2.5-flash
       - GEMINI_SYSTEM_INSTRUCTION=당신은 수강신청 도우미 챗봇입니다. 주어진 정보를 바탕으로 친절하게 답변하세요.
     depends_on:
-      - chromadb
-    restart: unless-stopped
+      - ai-server
     networks:
       - ddingdu-network
 
-  chromadb:
-    image: chromadb/chroma:latest
-    container_name: chromadb
+  ai-server:
+    build: ./ai-server  # 방금 만든 폴더를 빌드합니다
+    container_name: ai-server
     ports:
-      - "8000:8000"
-    volumes:
-      # [Key Fix] 호스트의 데이터 폴더를 바로 연결!
-      - ./chroma_db:/chroma/chroma
-    restart: unless-stopped
+      - "8000" # 내부 통신용 포트
+    environment:
+      - GOOGLE_API_KEY=${GEMINI_API_KEY}
     networks:
       - ddingdu-network
 
