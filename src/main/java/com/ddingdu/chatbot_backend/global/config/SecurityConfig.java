@@ -44,21 +44,42 @@ public class SecurityConfig {
                 // CORS Preflight 요청(OPTIONS)은 무조건 허용
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                // 인증 없이 접근 가능한 경로
+                // 정적 리소스
+                .requestMatchers("/", "/index.html").permitAll()
+
+                // 인증 없이 접근 가능한 경로 (회원가입, 로그인, 이메일 인증, 비밀번호 재설정)
                 .requestMatchers(
-                    "/",
-                    "/index.html",
-                    "/api/auth/**",           // 회원가입, 로그인
-                    "/api/email/**",          // 이메일 인증
-                    "/api/chat/**",           // 채팅 API
-                    "/api/test/**",           // 테스트 API
-                    // Swagger 관련 경로
+                    "/api/auth/signup",
+                    "/api/auth/login",
+                    "/api/auth/refresh",
+                    "/api/auth/email/send",
+                    "/api/auth/email/resend",
+                    "/api/auth/email/verify",
+                    "/api/auth/password/reset-request",
+                    "/api/auth/password/reset"
+                ).permitAll()
+
+                // 채팅 API (인증 불필요 - 필요시 수정)
+                .requestMatchers("/api/chat/**").permitAll()
+
+                // 테스트 API
+                .requestMatchers("/api/test/**").permitAll()
+
+                // Swagger 관련 경로
+                .requestMatchers(
                     "/v3/api-docs/**",
                     "/swagger-ui/**",
                     "/swagger-ui.html",
                     "/swagger-resources/**",
                     "/webjars/**"
                 ).permitAll()
+
+                // 인증 필요 API (로그아웃, 비밀번호 확인, 회원탈퇴)
+                .requestMatchers(
+                    "/api/auth/logout",
+                    "/api/auth/verify-password",
+                    "/api/auth/account"
+                ).authenticated()
 
                 // 그 외 모든 요청은 인증 필요
                 .anyRequest().authenticated()
