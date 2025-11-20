@@ -1,6 +1,6 @@
 package com.ddingdu.chatbot_backend.domain.users.entity;
 
-import com.ddingdu.chatbot_backend.domain.lecture.entity.Take;
+import com.ddingdu.chatbot_backend.domain.take.entity.Take;
 import com.ddingdu.chatbot_backend.domain.users.enums.Major;
 import com.ddingdu.chatbot_backend.global.common.BaseEntity;
 import jakarta.persistence.CascadeType;
