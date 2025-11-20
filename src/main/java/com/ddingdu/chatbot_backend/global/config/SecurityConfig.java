@@ -42,6 +42,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 인증 없이 접근 가능한 경로
                 .requestMatchers(
+                    "/",
+                    "/index.html",
                     "/api/auth/**",           // 회원가입, 로그인
                     "/api/email/**"          // 이메일 인증
                 ).permitAll()
