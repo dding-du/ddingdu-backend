@@ -5,6 +5,7 @@ import com.ddingdu.chatbot_backend.domain.auth.dto.request.EmailVerifyRequestDto
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.LoginRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.PasswordChangeRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.PasswordResetRequestDto;
+import com.ddingdu.chatbot_backend.domain.auth.dto.request.PasswordUpdateRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.PasswordVerifyRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.RefreshRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.SignUpRequestDto;
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -199,6 +201,29 @@ public class AuthController {
         String accessToken = authorizationHeader.substring("Bearer ".length());
         authService.verifyPassword(accessToken, request.getPassword());
         return ResponseEntity.ok("비밀번호가 확인되었습니다.");
+    }
+
+    @Operation(summary = "비밀번호 변경 (로그인 상태)", description = "로그인한 사용자가 비밀번호를 변경합니다. 먼저 POST /api/auth/verify-password로 현재 비밀번호를 검증한 후 호출해야 합니다.")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "비밀번호 변경 성공"),
+        @ApiResponse(responseCode = "400", description = "새 비밀번호 확인 불일치 또는 현재 비밀번호와 동일"),
+        @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    @PutMapping("/password")
+    public ResponseEntity<String> updatePassword(
+        @Parameter(description = "Bearer {accessToken}", required = true)
+        @RequestHeader("Authorization") String authorizationHeader,
+        @Valid @RequestBody PasswordUpdateRequestDto request) {
+
+        log.info("PUT /api/auth/password - 비밀번호 변경 요청");
+        String accessToken = authorizationHeader.substring("Bearer ".length());
+        authService.updatePassword(
+            accessToken,
+            request.getNewPassword(),
+            request.getNewPasswordConfirm()
+        );
+        return ResponseEntity.ok("비밀번호가 변경되었습니다. 보안을 위해 다시 로그인해주세요.");
     }
 
     @Operation(summary = "회원탈퇴", description = "현재 로그인된 사용자의 계정을 삭제합니다.")
