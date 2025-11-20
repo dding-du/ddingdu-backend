@@ -78,6 +78,7 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/logout",
                     "/api/auth/verify-password",
+                    "/api/auth/password",
                     "/api/auth/account",
                     "/api/users/**"
                 ).authenticated()

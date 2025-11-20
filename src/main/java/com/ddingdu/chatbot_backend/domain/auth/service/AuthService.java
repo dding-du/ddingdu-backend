@@ -276,6 +276,42 @@ public class AuthService {
     }
 
     /**
+     * 비밀번호 변경 (로그인한 사용자)
+     * 주의: 이 메서드 호출 전 반드시 /api/auth/verify-password로 현재 비밀번호를 검증해야 합니다.
+     */
+    @Transactional
+    public void updatePassword(String accessToken, String newPassword, String newPasswordConfirm) {
+        log.info("비밀번호 변경 시작");
+
+        // 1. 토큰에서 userId 추출
+        Long userId = jwtTokenProvider.getUserId(accessToken);
+
+        // 2. 사용자 조회
+        Users user = usersRepository.findById(userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 3. 새 비밀번호와 확인 비밀번호 일치 확인
+        if (!newPassword.equals(newPasswordConfirm)) {
+            throw new CustomException(ErrorCode.PASSWORD_MISMATCH);
+        }
+
+        // 4. 현재 비밀번호와 새 비밀번호가 같은지 확인
+        if (passwordEncoder.matches(newPassword, user.getPassword())) {
+            throw new CustomException(ErrorCode.SAME_AS_CURRENT_PASSWORD);
+        }
+
+        // 5. 새 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(newPassword);
+
+        // 6. 비밀번호 변경 (엔티티의 메서드 사용 - 변경 감지)
+        user.updatePassword(encodedPassword);
+
+        // 7. 보안을 위해 기존 Refresh Token 삭제 (재로그인 필요)
+        refreshTokenRepository.deleteByUserId(userId);
+
+        log.info("비밀번호 변경 완료: userId={}", userId);
+    }
+    /**
      * 회원탈퇴
      */
     @Transactional
