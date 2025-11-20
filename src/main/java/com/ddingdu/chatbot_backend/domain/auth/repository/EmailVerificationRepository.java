@@ -2,12 +2,13 @@ package com.ddingdu.chatbot_backend.domain.auth.repository;
 
 import com.ddingdu.chatbot_backend.domain.auth.entity.EmailVerification;
 import java.util.Optional;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
- * 이메일 인증 코드 Repository (Redis)
+ * 이메일 인증 코드 Repository
  */
-public interface EmailVerificationRepository extends CrudRepository<EmailVerification, String> {
+public interface EmailVerificationRepository extends JpaRepository<EmailVerification, Long> {
     /**
      * 이메일로 인증 코드 조회
      */
@@ -21,5 +22,6 @@ public interface EmailVerificationRepository extends CrudRepository<EmailVerific
     /**
      * 이메일로 삭제
      */
+    @Transactional
     void deleteByEmail(String email);
 }

@@ -13,8 +13,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -64,6 +66,23 @@ public class AuthController {
         log.info("POST /api/auth/refresh - 토큰 재발급 요청");
         TokenResponseDto response = authService.refresh(request);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * 로그아웃
+     * POST /api/auth/logout
+     */
+    @PostMapping("/logout")
+    public ResponseEntity<String> logout(
+        @RequestHeader("Authorization") String authorizationHeader) { // Access Token은 Header에서 추출
+
+        log.info("POST /api/auth/logout - 로그아웃 요청");
+
+        // "Bearer " 접두사 제거
+        String accessToken = authorizationHeader.substring("Bearer ".length());
+        authService.logout(accessToken);
+
+        return ResponseEntity.ok("로그아웃이 완료되었습니다.");
     }
 
     /**

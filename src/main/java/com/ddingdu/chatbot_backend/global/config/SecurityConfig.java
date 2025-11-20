@@ -43,9 +43,7 @@ public class SecurityConfig {
                 // 인증 없이 접근 가능한 경로
                 .requestMatchers(
                     "/api/auth/**",           // 회원가입, 로그인
-                    "/api/email/**",          // 이메일 인증
-                    "/error",
-                    "/favicon.ico"
+                    "/api/email/**"          // 이메일 인증
                 ).permitAll()
 
                 // 그 외 모든 요청은 인증 필요
@@ -78,7 +76,6 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",      // React 개발 서버
-            "http://localhost:5173",      // Vite 개발 서버
             "https://your-domain.com"     // 실제 프론트엔드 도메인
         ));
 

@@ -8,6 +8,8 @@ import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Collections;
 import java.util.Date;
 import javax.crypto.SecretKey;
@@ -134,6 +136,25 @@ public class JwtTokenProvider {
     public boolean isRefreshToken(String token) {
         Claims claims = parseClaims(token);
         return "refresh".equals(claims.get("type"));
+    }
+
+    /**
+     * JWT 토큰에서 만료 시간 (Date) 추출
+     */
+    public Date getExpiration(String token) {
+        Claims claims = parseClaims(token);
+        return claims.getExpiration();
+    }
+
+    /**
+     * JWT 토큰에서 만료 시간 (LocalDateTime) 추출
+     */
+    public LocalDateTime getExpirationDateTime(String token) {
+        Date expirationDate = getExpiration(token);
+        // Date를 시스템 기본 시간대를 사용하여 LocalDateTime으로 변환
+        return expirationDate.toInstant()
+            .atZone(ZoneId.systemDefault())
+            .toLocalDateTime();
     }
 }
 

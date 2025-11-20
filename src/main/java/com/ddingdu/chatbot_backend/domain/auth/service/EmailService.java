@@ -3,7 +3,7 @@ package com.ddingdu.chatbot_backend.domain.auth.service;
 import com.ddingdu.chatbot_backend.domain.auth.entity.EmailVerification;
 import com.ddingdu.chatbot_backend.domain.auth.repository.EmailVerificationRepository;
 import java.security.SecureRandom;
-import java.util.UUID;
+import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.mail.SimpleMailMessage;
@@ -25,6 +25,7 @@ public class EmailService {
 
     private static final String MJU_EMAIL_DOMAIN = "@mju.ac.kr";
     private static final SecureRandom random = new SecureRandom();
+    private static final int EXPIRATION_MINUTES = 5;
 
     /**
      * 이메일 도메인 검증
@@ -51,9 +52,8 @@ public class EmailService {
         // 3. 6자리 인증 코드 생성
         String code = generateVerificationCode();
 
-        // 4. Redis에 저장 (TTL: 5분)
+        // 4. DB에 저장
         EmailVerification verification = EmailVerification.builder()
-            .id(UUID.randomUUID().toString())
             .email(email)
             .code(code)
             .verified(false)
@@ -75,15 +75,19 @@ public class EmailService {
         EmailVerification verification = emailVerificationRepository.findByEmail(email)
             .orElseThrow(() -> new IllegalArgumentException("인증 코드가 만료되었거나 존재하지 않습니다."));
 
+        // 1. 인증 코드 만료 시간 검증 (5분)
+        if (verification.getCreatedAt().plusMinutes(EXPIRATION_MINUTES).isBefore(LocalDateTime.now())) {
+            emailVerificationRepository.delete(verification); // 만료된 코드는 삭제
+            throw new IllegalArgumentException("인증 코드가 만료되었습니다. 다시 요청해주세요.");
+        }
+
+        // 2. 인증 코드 일치 확인
         if (!verification.getCode().equals(code)) {
             throw new IllegalArgumentException("인증 코드가 일치하지 않습니다.");
         }
 
-        // 인증 완료 표시
-        EmailVerification verified = EmailVerification.builder()
-            .id(verification.getId())
-            .email(verification.getEmail())
-            .code(verification.getCode())
+        // 3. 인증 완료 표시 (update)
+        EmailVerification verified = verification.toBuilder()
             .verified(true)
             .build();
 
@@ -98,6 +102,14 @@ public class EmailService {
      */
     public boolean isVerified(String email) {
         return emailVerificationRepository.findByEmail(email)
+            .filter(verification -> {
+                // 만료 시간 체크
+                if (verification.getCreatedAt().plusMinutes(EXPIRATION_MINUTES).isBefore(LocalDateTime.now())) {
+                    emailVerificationRepository.delete(verification);
+                    return false; // 만료됨
+                }
+                return true; // 만료되지 않음
+            })
             .map(EmailVerification::getVerified)
             .orElse(false);
     }
@@ -131,7 +143,7 @@ public class EmailService {
             "안녕하세요, 띵듀입니다.\n\n" +
                 "회원가입을 위한 인증 코드는 다음과 같습니다:\n\n" +
                 "인증 코드: %s\n\n" +
-                "인증 코드는 5분간 유효합니다.\n" +
+                "인증 코드는 5분간 유효합니다.\n" + // [수정] 메시지
                 "본인이 요청하지 않았다면 이 메일을 무시하세요.",
             code
         ));
