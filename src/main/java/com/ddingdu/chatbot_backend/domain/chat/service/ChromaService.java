@@ -1,6 +1,7 @@
 package com.ddingdu.chatbot_backend.domain.chat.service;
 
 import com.ddingdu.chatbot_backend.domain.chat.dto.ChromaAddRequestDto;
+import com.ddingdu.chatbot_backend.domain.chat.dto.ChromaCollectionDto;
 import com.ddingdu.chatbot_backend.domain.chat.dto.ChromaSearchRequestDto;
 import com.ddingdu.chatbot_backend.domain.chat.dto.ChromaSearchResponseDto;
 import java.util.List;
@@ -8,6 +9,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
@@ -23,9 +25,41 @@ public class ChromaService {
     private String chromaBaseUrl;
 
     @Value("${chroma.collection-id}")
-    private String collectionId;
+    private String collectionName;
 
     private final RestClient restClient = RestClient.create();
+
+    private String cachedCollectionId = null;
+
+    private String getCollectionId() {
+        if (cachedCollectionId != null) {
+            return cachedCollectionId;
+        }
+
+        try {
+            // ChromaDB의 모든 컬렉션 목록 조회 (GET /api/v1/collections)
+            // (ChromaDB API 스펙상 이름으로 바로 ID를 주는 API가 명확지 않아 목록에서 찾습니다)
+            List<ChromaCollectionDto> collections = restClient.get()
+                .uri(chromaBaseUrl + "/collections")
+                .retrieve()
+                .body(new ParameterizedTypeReference<List<ChromaCollectionDto>>() {});
+
+            if (collections != null) {
+                for (ChromaCollectionDto col : collections) {
+                    if (col.getName().equals(collectionName)) {
+                        log.info("ChromaDB 컬렉션 ID 발견: {} -> {}", collectionName, col.getId());
+                        cachedCollectionId = col.getId();
+                        return col.getId();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("ChromaDB 컬렉션 목록 조회 실패: {}", e.getMessage());
+        }
+
+        log.warn("컬렉션 이름 '{}'을 찾을 수 없습니다.", collectionName);
+        return null;
+    }
 
     public void saveDocument(String text) {
         List<Float> vector = embeddingService.getEmbedding(text);
@@ -37,7 +71,7 @@ public class ChromaService {
             .build();
 
         restClient.post()
-            .uri(chromaBaseUrl + "/collections/" + collectionId + "/add")
+            .uri(chromaBaseUrl + "/collections/" + collectionName + "/add")
             .contentType(MediaType.APPLICATION_JSON)
             .body(request)
             .retrieve()
@@ -45,7 +79,15 @@ public class ChromaService {
     }
 
     public String searchRelatedContext(String question) {
-        String requestUrl = chromaBaseUrl + "/collections/" + collectionId + "/query"; // URL 미리 생성
+
+        String realId = getCollectionId();
+
+        if (realId == null) {
+            log.warn("RAG 검색 불가: 컬렉션 ID를 찾지 못했습니다.");
+            return "";
+        }
+
+        String requestUrl = chromaBaseUrl + "/collections/" + realId + "/query"; // URL 미리 생성
 
         try {
             log.info("RAG 검색 시작: 질문='{}'", question);
