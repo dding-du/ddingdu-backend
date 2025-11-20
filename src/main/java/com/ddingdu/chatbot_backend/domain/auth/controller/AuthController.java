@@ -11,6 +11,8 @@ import com.ddingdu.chatbot_backend.domain.auth.dto.request.SignUpRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.response.TokenResponseDto;
 import com.ddingdu.chatbot_backend.domain.auth.service.AuthService;
 import com.ddingdu.chatbot_backend.domain.auth.service.EmailService;
+import com.ddingdu.chatbot_backend.domain.auth.service.JwtTokenProvider;
+import com.ddingdu.chatbot_backend.domain.users.repository.UsersRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,6 +40,8 @@ public class AuthController {
 
     private final AuthService authService;
     private final EmailService emailService;
+    private final JwtTokenProvider jwtTokenProvider;
+    private final UsersRepository usersRepository;
 
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다. 이메일 인증이 완료된 상태여야 합니다.")
     @ApiResponses({
