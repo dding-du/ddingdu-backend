@@ -90,7 +90,8 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",      // React 개발 서버
-            "https://ddingduroid.vercel.app/"     // 실제 프론트엔드 도메인
+            "https://ddingduroid.vercel.app/",     // 실제 프론트엔드 도메인
+            "https://ddingdu.p-e.kr"
         ));
 
         configuration.setAllowedMethods(Arrays.asList(
