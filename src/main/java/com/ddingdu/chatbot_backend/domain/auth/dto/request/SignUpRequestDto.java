@@ -19,10 +19,11 @@ import lombok.NoArgsConstructor;
 public class SignUpRequestDto {
 
     @NotNull(message = "학번은 필수입니다")
+    @Pattern(regexp = "^\\d{8}$", message = "학번는 8자리 숫자여야 합니다")
     private String mjuId;
 
     @NotBlank(message = "이름은 필수입니다")
-    @Size(max = 10, message = "이름은 10자 이하여야 합니다")
+    @Size(max = 20, message = "이름은 10자 이하여야 합니다")
     private String name;
 
     @NotBlank(message = "이메일은 필수입니다")
