@@ -5,6 +5,7 @@ import com.ddingdu.chatbot_backend.domain.auth.dto.request.EmailVerifyRequestDto
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.LoginRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.PasswordChangeRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.PasswordResetRequestDto;
+import com.ddingdu.chatbot_backend.domain.auth.dto.request.PasswordVerifyRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.RefreshRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.SignUpRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.response.TokenResponseDto;
@@ -175,6 +176,25 @@ public class AuthController {
         log.info("POST /api/auth/password/reset - 비밀번호 재설정: email={}", request.getEmail());
         authService.resetPassword(request);
         return ResponseEntity.ok("비밀번호가 재설정되었습니다. 다시 로그인해주세요.");
+    }
+
+    @Operation(summary = "비밀번호 확인", description = "회원 탈퇴 전 본인 확인을 위한 비밀번호 검증")
+    @ApiResponses({
+        @ApiResponse(responseCode = "200", description = "비밀번호 확인 성공"),
+        @ApiResponse(responseCode = "400", description = "비밀번호 불일치"),
+        @ApiResponse(responseCode = "401", description = "유효하지 않은 토큰"),
+        @ApiResponse(responseCode = "404", description = "사용자를 찾을 수 없음")
+    })
+    @PostMapping("/verify-password")
+    public ResponseEntity<String> verifyPassword(
+        @Parameter(description = "Bearer {accessToken}", required = true)
+        @RequestHeader("Authorization") String authorizationHeader,
+        @Valid @RequestBody PasswordVerifyRequestDto request) {
+
+        log.info("POST /api/auth/verify-password - 비밀번호 확인 요청");
+        String accessToken = authorizationHeader.substring("Bearer ".length());
+        authService.verifyPassword(accessToken, request.getPassword());
+        return ResponseEntity.ok("비밀번호가 확인되었습니다.");
     }
 
     @Operation(summary = "회원탈퇴", description = "현재 로그인된 사용자의 계정을 삭제합니다.")

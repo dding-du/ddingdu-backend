@@ -74,6 +74,10 @@ dependencies {
     testImplementation 'org.springframework.security:spring-security-test' // from dev
     testImplementation 'io.projectreactor:reactor-test' // from feat/6 (WebFlux 테스트용)
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Mapper
+    implementation 'org.mapstruct:mapstruct:1.5.5.Final'
+    annotationProcessor 'org.mapstruct:mapstruct-processor:1.5.5.Final'
 }
 
 tasks.withType(JavaCompile).configureEach {

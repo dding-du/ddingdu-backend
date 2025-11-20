@@ -198,16 +198,29 @@ public class EmailService {
         try {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setTo(to);
-            message.setSubject(String.format("[띵듀] %s 인증 코드", purpose));
-            message.setText(String.format(
-                "안녕하세요, 띵듀입니다.\n\n" +
-                    "%s을 위한 인증 코드는 다음과 같습니다:\n\n" +
+            message.setSubject(String.format("[띵듀로이드] %s 이메일 인증 안내", purpose));
+
+            String text = String.format(
+                "안녕하세요, 명지대학교 강의정보 챗봇 띵듀로이드입니다.\n" +
+                    "회원가입 또는 비밀번호 찾기를 위해 요청하신 인증번호를 보내드립니다.\n\n" +
+
                     "인증 코드: %s\n\n" +
-                    "인증 코드는 5분간 유효합니다.\n" +
-                    "본인이 요청하지 않았다면 이 메일을 무시하세요.",
-                purpose,
-                code
-            ));
+
+                    "위 인증번호 숫자 6자리를 인증번호 입력창에 입력해주세요.\n\n" +
+
+                    "⚠️ 주의 사항\n" +
+                    "1. 인증번호는 발송 시점으로부터 5분 이내에 입력해 주셔야 유효합니다.\n" +
+                    "2. 제한 시간이 초과된 경우, '인증번호 재전송'을 눌러 새로운 인증번호를 받아주세요.\n" +
+                    "3. 본 메일은 발송 전용 메일이므로 회신이 불가능합니다.\n\n" +
+
+                    "본인이 인증번호를 요청하지 않았을 경우 본 이메일을 무시해주세요.\n" +
+                    "Please ignore this email if you did not request a verification code.\n\n" +
+
+                    "Team Ddingdu Ⓒ All Rights Reserved."
+                , code
+            );
+
+            message.setText(text);
 
             mailSender.send(message);
         } catch (Exception e) {
