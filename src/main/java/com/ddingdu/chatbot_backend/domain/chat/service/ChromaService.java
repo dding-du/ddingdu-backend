@@ -79,7 +79,15 @@ public class ChromaService {
     }
 
     public String searchRelatedContext(String question) {
-        String requestUrl = chromaBaseUrl + "/collections/" + collectionName + "/query"; // URL 미리 생성
+
+        String realId = getCollectionId();
+
+        if (realId == null) {
+            log.warn("RAG 검색 불가: 컬렉션 ID를 찾지 못했습니다.");
+            return "";
+        }
+
+        String requestUrl = chromaBaseUrl + "/collections/" + realId + "/query"; // URL 미리 생성
 
         try {
             log.info("RAG 검색 시작: 질문='{}'", question);
