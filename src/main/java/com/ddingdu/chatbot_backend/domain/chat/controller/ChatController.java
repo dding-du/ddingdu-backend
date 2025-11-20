@@ -22,6 +22,11 @@ public class ChatController {
 
     private final GeminiChatService geminiChatService;
 
+    @GetMapping("/health")
+    public String healthCheck() {
+        return "ChatController is up and running!";
+    }
+
     @PostMapping(value = "/stream/{conversationId}", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public Flux<String> chatStream(
         @PathVariable String conversationId,
