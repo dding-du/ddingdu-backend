@@ -51,7 +51,6 @@ public class SecurityConfig {
                     "/api/auth/**",           // 회원가입, 로그인
                     "/api/email/**",          // 이메일 인증
                     "/api/chat/**",           // 채팅 API
-                    "/api/test/**",           // 테스트 API
                     // Swagger 관련 경로
                     "/v3/api-docs/**",
                     "/swagger-ui/**",

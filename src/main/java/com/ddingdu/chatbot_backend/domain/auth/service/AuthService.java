@@ -13,7 +13,7 @@ import com.ddingdu.chatbot_backend.domain.users.entity.Users;
 import com.ddingdu.chatbot_backend.domain.users.repository.UsersRepository;
 import com.ddingdu.chatbot_backend.global.exception.CustomException;
 import com.ddingdu.chatbot_backend.global.exception.ErrorCode;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -251,6 +251,28 @@ public class AuthService {
         refreshTokenRepository.deleteByUserId(user.getUserId());
 
         log.info("비밀번호 재설정 완료: userId={}", user.getUserId());
+    }
+
+    /**
+     * 비밀번호 확인 (회원 탈퇴 전 확인용)
+     */
+    @Transactional(readOnly = true)
+    public void verifyPassword(String accessToken, String password) {
+        log.info("비밀번호 확인 시작");
+
+        // 1. 토큰에서 userId 추출
+        Long userId = jwtTokenProvider.getUserId(accessToken);
+
+        // 2. 사용자 조회
+        Users user = usersRepository.findById(userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 3. 비밀번호 검증
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new CustomException(ErrorCode.INVALID_PASSWORD);
+        }
+
+        log.info("비밀번호 확인 완료: userId={}", userId);
     }
 
     /**
