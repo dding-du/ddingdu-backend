@@ -49,7 +49,7 @@ public class Users extends BaseEntity {
     @Column(nullable = false, length = 20)
     private Major major;
 
-    @OneToMany(mappedBy = "users", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Take> takes = new ArrayList<>();
 
     @Builder
