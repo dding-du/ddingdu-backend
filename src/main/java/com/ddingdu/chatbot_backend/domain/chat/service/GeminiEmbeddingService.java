@@ -25,12 +25,13 @@ public class GeminiEmbeddingService {
 
     public List<Float> getEmbedding(String text) {
         try {
-            // [변경점] Content 객체를 만들지 않고, text(String)를 바로 넘깁니다.
-            // 파라미터 순서: (모델명, 텍스트, 설정)
+            EmbedContentConfig config = EmbedContentConfig.builder()
+                .taskType("RETRIEVAL_QUERY")
+                .build();
             EmbedContentResponse response = geminiClient.models.embedContent(
                 EMBEDDING_MODEL,
                 text,
-                (EmbedContentConfig) null // 설정이 없다면 null (형변환 명시)
+                config // 설정이 없다면 null (형변환 명시)
             );
 
             // 결과 추출 로직 (AutoValue 패턴 대응)
