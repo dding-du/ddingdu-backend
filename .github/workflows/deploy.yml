@@ -2,7 +2,7 @@ name: Deploy Ddingdu Backend to EC2
 
 on:
   push:
-    branches: [ "main" ] # main 브랜치에 푸시될 때마다 실행
+    branches: [ "main" ]
 
 jobs:
   deploy:
@@ -30,7 +30,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-northeast-2
 
-      # (4) ECR 로그인 (인증 토큰 획득)
+      # (4) ECR 로그인
       - name: Login to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -47,45 +47,50 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-      # (6) EC2 배포 및 컨테이너 재시작
-      - name: Deploy to EC2
-        uses: appleboy/ssh-action@master
+      # (6) compose.yml 파일을 EC2로 복사
+      - name: Copy compose.yml to EC2
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY }}
+          source: "compose.yml"
+          target: "~/ddingdu-backend"
+
+      # (7) EC2에서 Docker Compose로 배포
+      - name: Deploy with Docker Compose on EC2
+        uses: appleboy/ssh-action@master
+        env:
+          DB_URL: ${{ secrets.DB_URL }}
+          DB_USERNAME: ${{ secrets.DB_USERNAME }}
+          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+          GMAIL_USERNAME: ${{ secrets.GMAIL_USERNAME }}
+          GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY }}
+          envs: DB_URL,DB_USERNAME,DB_PASSWORD,GMAIL_USERNAME,GMAIL_PASSWORD,JWT_SECRET
           script: |
+            cd ~/ddingdu-backend
+            
+            # ECR 로그인
             aws ecr get-login-password --region ap-northeast-2 | docker login --username AWS --password-stdin 283784618786.dkr.ecr.ap-northeast-2.amazonaws.com
             
-            ECR_URL="283784618786.dkr.ecr.ap-northeast-2.amazonaws.com/ddingdu-backend"
+            # 환경 변수를 export로 설정
+            export DB_URL="${DB_URL}"
+            export DB_USERNAME="${DB_USERNAME}"
+            export DB_PASSWORD="${DB_PASSWORD}"
+            export GMAIL_USERNAME="${GMAIL_USERNAME}"
+            export GMAIL_PASSWORD="${GMAIL_PASSWORD}"
+            export JWT_SECRET="${JWT_SECRET}"
             
             # 최신 이미지 Pull
-            docker pull $ECR_URL:latest
+            docker compose pull ddingdu-backend
             
-            # 이전 컨테이너 정지 및 삭제
-            docker stop ddingdu-backend || true
-            docker rm ddingdu-backend || true
+            # Docker Compose로 서비스 재시작
+            docker compose up -d
             
-            # 새로운 컨테이너 실행 (모든 환경 변수 포함)
-            docker run -d -p 8080:8080 \
-              -e SPRING_PROFILES_ACTIVE=prod \
-              -e SPRING_DATASOURCE_URL="${{ secrets.DB_URL }}" \
-              -e SPRING_DATASOURCE_USERNAME="${{ secrets.DB_USERNAME }}" \
-              -e SPRING_DATASOURCE_PASSWORD="${{ secrets.DB_PASSWORD }}" \
-              -e SPRING_DATASOURCE_DRIVER_CLASS_NAME=com.mysql.cj.jdbc.Driver \
-              -e SPRING_JPA_HIBERNATE_DDL_AUTO=update \
-              -e SPRING_JPA_SHOW_SQL=false \
-              -e SPRING_MAIL_HOST=smtp.gmail.com \
-              -e SPRING_MAIL_PORT=587 \
-              -e SPRING_MAIL_USERNAME="${{ secrets.GMAIL_USERNAME }}" \
-              -e SPRING_MAIL_PASSWORD="${{ secrets.GMAIL_PASSWORD }}" \
-              -e SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true \
-              -e SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true \
-              -e JWT_SECRET="${{ secrets.JWT_SECRET }}" \
-              -e JWT_ACCESS_TOKEN_EXPIRATION=3600000 \
-              -e JWT_REFRESH_TOKEN_EXPIRATION=604800000 \
-              --name ddingdu-backend \
-              --restart unless-stopped \
-              $ECR_URL:latest
-            
+            # 사용하지 않는 이미지 정리
             docker image prune -f
