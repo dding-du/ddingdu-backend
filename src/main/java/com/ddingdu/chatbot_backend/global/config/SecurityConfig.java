@@ -46,7 +46,14 @@ public class SecurityConfig {
                     "/index.html",
                     "/api/auth/**",           // 회원가입, 로그인
                     "/api/email/**",          // 이메일 인증
-                    "/api/chat/**"         // 채팅 API
+                    "/api/chat/**",           // 채팅 API
+                    "/api/test/**",           // 테스트 API
+                    // Swagger 관련 경로
+                    "/v3/api-docs/**",
+                    "/swagger-ui/**",
+                    "/swagger-ui.html",
+                    "/swagger-resources/**",
+                    "/webjars/**"
                 ).permitAll()
 
                 // 그 외 모든 요청은 인증 필요
@@ -79,7 +86,7 @@ public class SecurityConfig {
 
         configuration.setAllowedOrigins(Arrays.asList(
             "http://localhost:3000",      // React 개발 서버
-            "https://your-domain.com"     // 실제 프론트엔드 도메인
+            "https://ddingduroid.vercel.app/"     // 실제 프론트엔드 도메인
         ));
 
         configuration.setAllowedMethods(Arrays.asList(

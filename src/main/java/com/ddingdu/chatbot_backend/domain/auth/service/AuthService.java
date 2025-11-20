@@ -1,6 +1,7 @@
 package com.ddingdu.chatbot_backend.domain.auth.service;
 
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.LoginRequestDto;
+import com.ddingdu.chatbot_backend.domain.auth.dto.request.PasswordChangeRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.RefreshRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.request.SignUpRequestDto;
 import com.ddingdu.chatbot_backend.domain.auth.dto.response.TokenResponseDto;
@@ -219,5 +220,77 @@ public class AuthService {
             log.error("로그아웃 중 Access Token 블랙리스트 처리 실패: {}", e.getMessage());
             throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    /**
+     * 비밀번호 재설정
+     */
+    @Transactional
+    public void resetPassword(PasswordChangeRequestDto request) {
+        log.info("비밀번호 재설정 시작: email={}", request.getEmail());
+
+        // 1. 사용자 조회
+        Users user = usersRepository.findByEmail(request.getEmail())
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 2. 인증 코드 검증
+        if (!emailService.isVerified(request.getEmail())) {
+            throw new CustomException(ErrorCode.EMAIL_NOT_VERIFIED);
+        }
+
+        // 3. 새 비밀번호 암호화
+        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+
+        // 4. 비밀번호 변경 (엔티티의 메서드 사용 - 변경 감지)
+        user.updatePassword(encodedPassword);
+
+        // 5. 인증 정보 삭제
+        emailService.deleteVerification(request.getEmail());
+
+        // 6. 기존 Refresh Token 삭제 (보안을 위해 재로그인 필요)
+        refreshTokenRepository.deleteByUserId(user.getUserId());
+
+        log.info("비밀번호 재설정 완료: userId={}", user.getUserId());
+    }
+
+    /**
+     * 회원탈퇴
+     */
+    @Transactional
+    public void deleteAccount(String accessToken) {
+        log.info("회원탈퇴 시작");
+
+        // 1. 토큰에서 userId 추출
+        Long userId = jwtTokenProvider.getUserId(accessToken);
+
+        // 2. 사용자 조회
+        Users user = usersRepository.findById(userId)
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        // 3. Refresh Token 삭제
+        refreshTokenRepository.deleteByUserId(userId);
+        log.info("Refresh Token 삭제 완료: userId={}", userId);
+
+        // 4. Access Token 블랙리스트 등록
+        try {
+            LocalDateTime expirationTime = jwtTokenProvider.getExpirationDateTime(accessToken);
+
+            AccessTokenBlacklist blacklistEntry = AccessTokenBlacklist.builder()
+                .accessToken(accessToken)
+                .expirationTime(expirationTime)
+                .build();
+
+            accessTokenBlacklistRepository.save(blacklistEntry);
+            log.info("Access Token 블랙리스트 등록 완료: userId={}", userId);
+
+        } catch (Exception e) {
+            log.error("회원탈퇴 중 Access Token 블랙리스트 처리 실패: {}", e.getMessage());
+            throw new CustomException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+        // 5. 사용자 삭제
+        usersRepository.delete(user);
+
+        log.info("회원탈퇴 완료: userId={}, email={}", userId, user.getEmail());
     }
 }
