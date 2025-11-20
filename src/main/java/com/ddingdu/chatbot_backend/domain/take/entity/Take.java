@@ -1,5 +1,6 @@
-package com.ddingdu.chatbot_backend.domain.lecture.entity;
+package com.ddingdu.chatbot_backend.domain.take.entity;
 
+import com.ddingdu.chatbot_backend.domain.lecture.entity.Lecture;
 import com.ddingdu.chatbot_backend.domain.users.entity.Users;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

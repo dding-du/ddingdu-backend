@@ -1,5 +1,6 @@
 package com.ddingdu.chatbot_backend.domain.lecture.entity;
 
+import com.ddingdu.chatbot_backend.domain.take.entity.Take;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

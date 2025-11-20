@@ -1,5 +1,11 @@
 package com.ddingdu.chatbot_backend.domain.chat.service;
 
+import com.ddingdu.chatbot_backend.domain.chat.dto.ChatRequestDto;
+import com.ddingdu.chatbot_backend.domain.take.entity.Take;
+import com.ddingdu.chatbot_backend.domain.users.entity.Users;
+import com.ddingdu.chatbot_backend.domain.users.repository.UsersRepository;
+import com.ddingdu.chatbot_backend.global.exception.CustomException;
+import com.ddingdu.chatbot_backend.global.exception.ErrorCode;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,11 +20,33 @@ import reactor.core.publisher.Flux;
 public class ChatService {
 
     private final RestClient fastApiRestClient;
+    private final UsersRepository usersRepository;
 
     @Value("${api.fastapi.base-url}")
     private String aiServerBaseUrl;
 
-    public Flux<String> getAiResponse(String userMessage) {
+    public Flux<String> getAiResponse(ChatRequestDto chatRequestDto) {
+
+        Users user = usersRepository.findById(chatRequestDto.getUserId())
+            .orElseThrow(() -> new CustomException(ErrorCode.USER_NOT_FOUND));
+
+        String major = user.getMajor().getDisplayName();
+
+        StringBuilder lectures = new StringBuilder("내가 듣는 전공수업은 ");
+
+        for (Take take : user.getTakes()) {
+            lectures.append(take.getLecture().getLectureName()).append(", ");
+        }
+
+        if (lectures.length() > 0) {
+            lectures.setLength(lectures.length() - 2);
+        }
+
+        String lectureList = lectures.toString();
+
+        String background = "나는 " + major + " 전공 학생이야. " + lectureList + " 수업을 듣고 있어.";
+        String userMessage = background + " 질문: " + chatRequestDto.getMessage();
+
         final String apiPath = "/search";
 
         return Flux.create(sink -> {

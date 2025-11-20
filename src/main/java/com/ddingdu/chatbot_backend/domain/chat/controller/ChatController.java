@@ -59,7 +59,7 @@ public class ChatController {
         @RequestBody ChatRequestDto requestDto) {
 
         // Note: 실제 FastAPI가 스트리밍을 지원하지 않더라도, Flux로 감싸 반환하여 WebFlux 환경을 유지합니다.
-        return ChatService.getAiResponse(requestDto.getMessage());
+        return ChatService.getAiResponse(requestDto);
     }
 
 
