@@ -44,7 +44,7 @@ public class ChatService {
 
         String lectureList = lectures.toString();
 
-        String background = "나는 " + major + " 전공 학생이야. " + lectureList + " 수업을 듣고 있어.";
+        String background = "나는 " + major + " 학생이야. " + lectureList + " 수업을 듣고 있어.";
         String userMessage = background + " 질문: " + chatRequestDto.getMessage();
 
         final String apiPath = "/search";

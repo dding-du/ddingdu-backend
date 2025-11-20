@@ -78,7 +78,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/api/auth/logout",
                     "/api/auth/verify-password",
-                    "/api/auth/account"
+                    "/api/auth/account",
+                    "/api/users/**"
                 ).authenticated()
 
                 // 그 외 모든 요청은 인증 필요
