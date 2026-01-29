@@ -205,7 +205,11 @@
 5. 사용하지 않는 이미지 자동 정리
 
 ## 시연 영상
-![시연영상](https://github.com/user-attachments/assets/c1b06bfb-5286-48e6-98ff-f59c9054150f)
+
+### Flow : `회원가입` → `로그인` → `채팅` → `강의보관함` → `비밀번호 변경` → `회원탈퇴`
+https://github.com/user-attachments/assets/18d7f641-1d70-49fd-985a-4f0cb0d221ee
+
+
 
 
 ## 트러블슈팅
